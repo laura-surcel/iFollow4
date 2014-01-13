@@ -1,0 +1,120 @@
+﻿@model Wad.iFollow.Web.Models.WallPostsModel
+<div class="btn-group">
+<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" id="notification" style="margin-top:5px;margin-bottom:5px;margin-right:15px;border-radius:5px">
+     <span class="fa fa-users fa-lg"></span>
+    @if(Model.notifications.NotificationCounter > 0)
+    {
+     <span class="badge pull-right" style="position:absolute;margin-top:0px" id="counter">
+         @Model.notifications.NotificationCounter
+     </span>
+    }
+</button>
+    <ul class="dropdown-menu" role="menu">
+        
+        @if(Model.notifications.NotificationCounter > 0)
+        {
+            if(Model.notifications.Ratings.Count < 9)
+            {
+                foreach(var r in Model.notifications.Ratings)
+                {
+                    foreach (var rr in r.RatingsNotification)
+                    {
+                            <li><a href="#" style="text-decoration:none" onclick="openModal(@r.PostId);">User @rr.Username rated the post @r.PostId with @rr.Rate stars</a></li>
+                    }
+                }
+                
+                foreach(var x in Model.notifications.NotifComments)
+                {
+                    foreach(var xx in x.Comm)
+                    {
+                        <li><a href="#" style="text-decoration:none" onclick="openModal(@x.PostId);">User @xx.UsernameComment commented: @xx.Content</a></li>
+                    }
+                }
+            }
+            else
+            {
+                <li><a data-toggle="modal" href="#notifModal">You have more than 10 notifications pending !</a></li>
+            }
+        }
+        else
+        {
+           <li><a href="#" style="text-decoration:none">You don't have notifications pending.</a></li> 
+        }
+  </ul>
+</div>
+    <div class="modal fade" id="notifModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    Notifications
+                </div>
+                <div class="modal-body">
+                    @if(Model.notifications.NotificationCounter > 0)
+                    {
+                            foreach(var r in Model.notifications.Ratings)
+                            {
+                                foreach (var rr in r.RatingsNotification)
+                                {
+                                    <div style="height:auto;margin-bottom:3px;overflow-y:auto">
+                                        <ul class="col-md-6">
+                                            <li><a href="#" style="font-size:medium;text-decoration:none;color: cornflowerblue; font-family: 'Arabic Typesetting';" 
+                                                onclick="openModalFromModal(@r.PostId);">
+                                                User @rr.Username rated the post @r.PostId with @rr.Rate stars</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+                            }
+                            foreach(var x in Model.notifications.NotifComments)
+                            {
+                                foreach(var xx in x.Comm)
+                                {
+                                    <div style="height:auto;margin-bottom:3px;overflow-y:auto">
+                                        <ul class="col-md-6">
+                                            <li><a href="#" style="font-size:medium;text-decoration:none;color: cornflowerblue; font-family: 'Arabic Typesetting';" 
+                                                onclick="openModalFromModal(@x.PostId);">
+                                                <a href="#" style="text-decoration:none" onclick="openModal(@x.PostId);">User @xx.UsernameComment commented:@xx.Content on the post @x.PostId</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                }
+                            }
+                     }
+                </div>   
+                <div class="modal-footer" ></div>      
+            </div>
+        </div>
+    </div>
+<script>
+    $("#notification").click(function () {
+        $("#counter").hide();
+        $.ajax({
+            url: "Wall/ResetNotifications",
+            type: "post", //send it through get method
+            data: {},
+            success: function (response) {
+            }
+        });
+    });
+
+    function openModal(modalId)
+    {
+            var modal= "#myModal";
+            $(modal.concat(modalId)).modal({
+                show: 'true'
+            });
+    }
+
+    function openModalFromModal(modalId)
+    {
+        $("#notifModal").modal('hide');
+        var modal = "#myModal";
+        $(modal.concat(modalId)).modal({
+            show: 'true'
+        });
+        $("body").css({ "overflow": "hidden" });
+    }
+</script>
+

@@ -1,0 +1,125 @@
+﻿@model Wad.iFollow.Web.Models.FollowersModel
+
+@{
+    ViewBag.Title = "Followers Page";
+}
+
+<div id ="bodyPartial"> 
+@if (Model.wallElements != null)
+{
+    foreach (var item in Model.wallElements)
+    {
+        using (Ajax.BeginForm("Follow", "Followers", new AjaxOptions { HttpMethod = "POST", OnSuccess = "updateParams" }))
+        {
+            string elem = string.Format(@"{0}", item.id);
+            <div class ="col-md-12" style="padding:100px">
+
+             <!--The profile photo of the friend -->
+             <div class="col-md-3 ">
+                <img src="@Url.Content(@item.avatar)" class="profileFollowers" style="border-radius: 10px 10px;"/>
+             </div>
+
+             <!--The name of the friend -->
+             <div class="col-md-4">
+             @Ajax.ActionLink(@item.firstName + " " + @item.lastName, "Profile", "Wall", new { user = @elem }, new AjaxOptions { UpdateTargetId = "body" }, new { @class = "profileText" })
+             </div>
+
+             <!--The option to follow the person -->
+             <div class="col-md-5">
+                 <div style="padding:15px"></div>
+                 @{
+            var text = "";
+            var val = "";
+                 }
+
+                 @if (@item.isFollowed)
+                 {
+                     text = "Unfollow";
+                     val = "0";
+                 }
+                 else
+                 {
+                     text = "Follow";
+                     val = "1";
+                 } 
+                 <input type="hidden" value="@val" name="follow" id="h1-@elem"/>
+                 <button class="btn btn-primary" style="width:120px" type="submit" value="@elem" name ="submit" id="s1-@elem">@text</button>
+                 
+                 @if (@item.showBlock)
+                 {
+                     var textB = "";
+                     var valB = "";
+
+                     if (@item.isBlocked)
+                     {
+                         textB = "Unblock";
+                         valB = "0";
+                     }
+                     else
+                     {
+                         textB = "Block";
+                         valB = "1";
+                     }
+                     <input type="hidden" value="@valB" name="block" id="h2-@elem"/>
+                     <button class="btn btn-danger" style="width:120px" type="button" value="@elem" name ="submit" id="s2-@elem" onclick="return submitForm(this);">@textB</button>                  
+                 }                    
+                 else 
+                 {
+                     if (@item.isBlocked)
+                     {                         
+                        <div class="beautifulFont" style="font-size:12px; text-shadow: 0px 0px 0px #aaa; font-family:'Times New Roman'"><b>This user blocked you</b></div>
+                    }
+                 }                             
+             </div>
+            </div>
+        }
+    }
+}
+</div>
+
+<script>
+    function updateParams(data) {
+        var hidden1 = "#h1-" + data.id;
+        var btn = "s1-" + data.id;
+        var btnElem = document.getElementById(btn);
+
+        if (data.follow == 1) {
+            $(hidden1).val("0");
+            btnElem.firstChild.data = "Unfollow";
+            console.log("prepare unfollow" + data.id);
+        }
+        else {
+            $(hidden1).val("1");
+            btnElem.firstChild.data = "Follow";
+            console.log("prepare follow" + data.id);
+        }
+    }
+
+    function submitForm(button) {
+        var s = button.value;
+        var hidElem = document.getElementById("h2-" + s);
+        var b = hidElem.value;
+
+        $.ajax({
+            url: "Followers/Block",
+            type: "post", //send it through get method
+            data: { submit:s, block: b },
+            dataType: "json",
+            success: function (response, status, xhr) {
+                //Do Something
+                if (response.block == 1) {
+                    hidElem.value = "0";
+                    document.getElementById("s2-" + s).firstChild.data = "Unblock";
+                    console.log("prepare unblock" + response.id);
+                }
+                else {
+                    hidElem.value="1";
+                    document.getElementById("s2-"+s).firstChild.data = "Block";
+                    console.log("prepare block" + response.id);
+                }
+            },
+            error: function (xhr) {
+            }
+        });
+    }
+</script>

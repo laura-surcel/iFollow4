@@ -1,0 +1,51 @@
+﻿@model Wad.iFollow.Web.Models.WallPostsModel
+@{
+    ViewBag.Title = "MainPage";
+}
+    
+<div style="background-color:burlywood" id="utility-bar">
+    <div class="input-group col-md-12">
+        <div class="col-md-12">
+            <div class="pull-right">
+                <div id ="searchSuggest"></div>
+                <input type="text" id="SearchBox" placeholder="Search.." class="form-control" style="width:160px;margin-top:0px"/>  
+                <button class="btn btn-warning" id="search" style="margin-top:5px;margin-bottom:5px;margin-left:-2px" onclick="return submitSearchForm();">Search</button>      
+                <a href="@Url.Action("LogOff", "Account")" class ="btn btn-danger" id="noDecoration">Logout</a> 
+            </div> 
+             <div class="pull-right" id="PartialDiv">
+                @Html.Partial("~/Views/Wall/_NotificationPartial.cshtml", @Model)
+            </div> 
+            <div style="clear:both"></div>
+        </div>
+    </div><!-- /input-group -->
+</div>
+<div id ="content">
+    @Html.Partial("~/Views/Wall/_WallPosts.cshtml", @Model)
+</div>
+
+<script>
+    var autoRefreshInterval = 1000 * 30;
+    var refresh = function () {
+        $('#PartialDiv').load('@Url.Action("Refresh", "Wall")');
+        setTimeout(refresh, autoRefreshInterval);
+    };
+
+    refresh();
+
+    function submitSearchForm() {
+        var searchedText = $("#SearchBox").val();
+        $.ajax({
+            url: "/Wall/ViewSearchResults",
+            type: "post",
+            data: {searchedName: searchedText},
+            dataType: "text",
+            success: function (result) {
+                $('#content').html(result);
+            },
+            error: function (result) {
+                alert('No changes made. Come back later!');
+            }
+        });
+    }
+</script>
+
